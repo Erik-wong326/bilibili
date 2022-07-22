@@ -26,4 +26,5 @@ public class User {
 
     private Date updateTime;
 
+    private UserInfo userInfo;
 }

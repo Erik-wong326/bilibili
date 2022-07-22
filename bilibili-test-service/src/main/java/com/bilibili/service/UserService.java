@@ -26,6 +26,10 @@ public class UserService {
     @Autowired
     private UserDao userDao;
 
+    /**
+     * 2.注册
+     * @param user 用户资料
+     */
     public void addUser(User user) {
         String phone = user.getPhone();
         //1.判断手机号是否合法
@@ -69,18 +73,31 @@ public class UserService {
 
     }
 
+    /**
+     * 2.1 根据手机号查询用户
+     * @param phone 手机号
+     * @return 查询结果
+     */
     public User getUserByPhone(String phone){
         return userDao.getUserByPhone(phone);
     }
 
-    public String login(User user) {
-        //1.判断手机号
-        String phone = user.getPhone();
-        if (StringUtils.isNullOrEmpty(phone)) {
-            throw new ConditionException("手机号不能为空");
+    /**
+     * 3.登录
+     * @param user user
+     * @return 用户登录凭证
+     * @throws Exception
+     */
+    public String login(User user) throws Exception{
+        //1.判断手机号和邮箱
+        String phone = user.getPhone() == null ? "" : user.getPhone();
+        String email = user.getEmail() == null ? "" : user.getEmail();
+        if (StringUtils.isNullOrEmpty(phone) && StringUtils.isNullOrEmpty(email)) {
+            throw new ConditionException("参数异常");
         }
         //2.判断用户是否在数据库中存在
-        User dbUser = this.getUserByPhone(phone);
+//        User dbUser = this.getUserByPhone(phone);
+        User dbUser = userDao.getUserByPhoneOrEmail(phone, email);
         if (null == dbUser){
             throw new ConditionException("当前用户不存在");
         }
@@ -101,7 +118,47 @@ public class UserService {
             throw new ConditionException("密码错误!");
         }
         //返回token
-        TokenUtil tokenUtil = new TokenUtil();
-        return tokenUtil.generateToken(dbUser.getId());
+        return TokenUtil.generateToken(dbUser.getId());
+    }
+
+    /**
+     * 4.获取用户信息
+     * @param userId 用户id
+     * @return User
+     */
+    public User getUserInfo(Long userId) {
+        User user = userDao.getUserById(userId);
+        UserInfo userInfo = userDao.getUserInfoByUserId(userId);
+        user.setUserInfo(userInfo);
+        return user;
+    }
+
+    /**
+     * 5.更新用户
+     * @param user 用户
+     * @throws Exception
+     */
+    public void updateUsers(User user) throws Exception{
+        Long id = user.getId();
+        User dbUser = userDao.getUserById(id);
+        if (dbUser == null){
+            throw new ConditionException("用户不存在");
+        }
+        if (!StringUtils.isNullOrEmpty(user.getPassword())){
+            String rawPassword = RSAUtil.decrypt(user.getPassword());
+            String md5Password = MD5Util.sign(rawPassword, dbUser.getSalt(), "UTF-8");
+            user.setPassword(md5Password);
+        }
+        user.setUpdateTime(new Date());
+        userDao.updateUsers(user);
+    }
+
+    /**
+     * 5.1更新用户信息
+     * @param userInfo 用户信息对象
+     */
+    public void updateUserInfos(UserInfo userInfo) {
+        userInfo.setUpdateTime(new Date());
+        userDao.updateUserInfos(userInfo);
     }
 }
