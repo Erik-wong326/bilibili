@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD MAPPER 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bilibili.dao.UserFollowingDao">
+    <insert id="addUserFollowing">
+        INSERT INTO t_user_following (
+            userId,
+            followingId,
+            groupId,
+            createTime
+        ) VALUES(
+            #{userId},
+            #{followingId},
+            #{groupId},
+            #{createTime}
+        )
+    </insert>
+
+    <delete id="deleteUserFollowing" parameterType="com.bilibili.domain.UserFollowing">
+        delete from
+                    t_user_following
+        where userId = #{userId}
+        AND followingId = #{followingId}
+    </delete>
+
+    <select id="getUserFollowings" parameterType="java.lang.Long" resultType="com.bilibili.domain.UserFollowing">
+        SELECT *
+        FROM t_user_following
+        WHERE userId = #{userId};
+    </select>
+
+    <select id="getUserFans" parameterType="java.lang.Long" resultType="com.bilibili.domain.UserFollowing">
+        SELECT *
+        FROM t_user_following
+        WHERE followingId = #{followingId};
+    </select>
+
+</mapper>

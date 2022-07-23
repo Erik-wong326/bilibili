@@ -1,6 +1,8 @@
 package com.bilibili.service;
 
+import com.alibaba.fastjson.JSONObject;
 import com.bilibili.dao.UserDao;
+import com.bilibili.domain.PageResult;
 import com.bilibili.domain.User;
 import com.bilibili.domain.UserInfo;
 import com.bilibili.domain.constant.UserConstant;
@@ -13,7 +15,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+import java.util.Set;
 
 /**
  * @author Erik_Wong
@@ -160,5 +165,43 @@ public class UserService {
     public void updateUserInfos(UserInfo userInfo) {
         userInfo.setUpdateTime(new Date());
         userDao.updateUserInfos(userInfo);
+    }
+
+    /**
+     * 6.根据 id 获取 user
+     * @param followingId
+     * @return
+     */
+    public User getUserById(Long followingId) {
+        return userDao.getUserById(followingId);
+    }
+
+    /**
+     * 7.根据 userIdlist 获取 userInfo
+     * @param userIdList 用户id列表
+     * @return 用户id列表中的用户信息
+     */
+    public List<UserInfo> getUserInfoByUserIds(Set<Long> userIdList) {
+        return userDao.getUserInfoByUserIds(userIdList);
+    }
+
+    /**
+     * 8.分页查询
+     * @param params
+     * @return
+     */
+    public PageResult<UserInfo> pageListUserInfos(JSONObject params) {
+        Integer no = params.getInteger("no");
+        Integer size = params.getInteger("size");
+        params.put("start",(no - 1) * size);
+        params.put("limit",size);
+        //有效数据条数
+        Integer total = userDao.pageCountUserInfos(params);
+        List<UserInfo> list = new ArrayList<>();
+        //获取有效数据
+        if (total > 0){
+            list = userDao.pageListUserInfos(params);
+        }
+        return new PageResult<>(total,list);
     }
 }

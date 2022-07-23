@@ -1,10 +1,15 @@
 package com.bilibili.dao;
 
+import com.alibaba.fastjson.JSONObject;
 import com.bilibili.domain.User;
 import com.bilibili.domain.UserInfo;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * @author Erik_Wong
@@ -74,4 +79,24 @@ public interface UserDao {
      */
     Integer updateUserInfos(UserInfo userInfo);
 
+    /**
+     * 6.根据 userIdList 获取 userInfo
+     * @param userIdList 用户id列表
+     * @return 用户信息列表
+     */
+    List<UserInfo> getUserInfoByUserIds(Set<Long> userIdList);
+
+    /**
+     * 7.获取用户数据条数
+     * @param params json参数
+     * @return 有效用户数量
+     */
+    Integer pageCountUserInfos(Map<String,Object> params);
+
+    /**
+     * 8.获取用户数据
+     * @param params json参数
+     * @return 用户信息
+     */
+    List<UserInfo> pageListUserInfos(JSONObject params);
 }
