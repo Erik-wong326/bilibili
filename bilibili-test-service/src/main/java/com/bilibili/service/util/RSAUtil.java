@@ -33,9 +33,15 @@ public class RSAUtil {
 	}
 
 	public static RSAPublicKey getPublicKey() throws Exception {
+		//公钥解码
 		byte[] decoded = Base64.decodeBase64(PUBLIC_KEY);
-		return (RSAPublicKey) KeyFactory.getInstance("RSA")
-				.generatePublic(new X509EncodedKeySpec(decoded));
+		//以给定的编码密钥,构建一个新的 X509EncodedKeySpec
+		X509EncodedKeySpec x509EncodedKeySpec = new X509EncodedKeySpec(decoded);
+		//以rsa算法,获取密钥实例
+		KeyFactory rsa = KeyFactory.getInstance("RSA");
+		//密钥生成公钥，返回RSA公钥
+		return (RSAPublicKey)rsa.generatePublic(x509EncodedKeySpec);
+//		return (RSAPublicKey) KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(decoded));
 	}
 
 	public static RSAPrivateKey getPrivateKey() throws Exception {
@@ -43,15 +49,28 @@ public class RSAUtil {
 		return (RSAPrivateKey) KeyFactory.getInstance("RSA")
 				.generatePrivate(new PKCS8EncodedKeySpec(decoded));
 	}
-	
+
+	/**
+	 * 生成密钥对
+	 * @return RSA密钥对
+	 * @throws NoSuchAlgorithmException 异常
+	 */
 	public static RSAKey generateKeyPair() throws NoSuchAlgorithmException {
+		//实例化密钥生成器
 		KeyPairGenerator keyPairGen = KeyPairGenerator.getInstance("RSA");
+		//初始化密钥生成器
 		keyPairGen.initialize(1024, new SecureRandom());
+		//生成密钥对
 		KeyPair keyPair = keyPairGen.generateKeyPair();
+		//获取A的私钥
 		RSAPrivateKey privateKey = (RSAPrivateKey) keyPair.getPrivate();
+//		System.out.println("系数: " + privateKey.getModulus() + "加密指数:" + privateKey.getPrivateExponent());
+		//获取A的私钥
 		RSAPublicKey publicKey = (RSAPublicKey) keyPair.getPublic();
+		//以Base64的规范,加密公钥和私钥
 		String publicKeyString = new String(Base64.encodeBase64(publicKey.getEncoded()));
 		String privateKeyString = new String(Base64.encodeBase64(privateKey.getEncoded()));
+		//返回新的RSA密钥对及其String形式
 		return new RSAKey(privateKey, privateKeyString, publicKey, publicKeyString);
 	}
 
@@ -60,6 +79,7 @@ public class RSAUtil {
 		RSAPublicKey rsaPublicKey = (RSAPublicKey) KeyFactory.getInstance("RSA")
 				.generatePublic(new X509EncodedKeySpec(decoded));
 		Cipher cipher = Cipher.getInstance("RSA");
+		//用密钥初始化 Cipher
 		cipher.init(1, rsaPublicKey);
 		return Base64.encodeBase64String(cipher.doFinal(source.getBytes(StandardCharsets.UTF_8)));
 	}
